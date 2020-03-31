@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	abci "github.com/tendermint/tendermint/abci/types"
-	tmos "github.com/tendermint/tendermint/libs/os"
+	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/proxy"
 	tmsm "github.com/tendermint/tendermint/state"
 	tmstore "github.com/tendermint/tendermint/store"
@@ -42,12 +42,10 @@ func replayTxs(rootDir string) error {
 		// Copy the rootDir to a new directory, to preserve the old one.
 		fmt.Fprintln(os.Stderr, "Copying rootdir over")
 		oldRootDir := rootDir
-
 		rootDir = oldRootDir + "_replay"
-		if tmos.FileExists(rootDir) {
-			tmos.Exit(fmt.Sprintf("temporary copy dir %v already exists", rootDir))
+		if cmn.FileExists(rootDir) {
+			cmn.Exit(fmt.Sprintf("temporary copy dir %v already exists", rootDir))
 		}
-
 		if err := cpm.Copy(oldRootDir, rootDir); err != nil {
 			return err
 		}
@@ -94,8 +92,8 @@ func replayTxs(rootDir string) error {
 
 	// Application
 	fmt.Fprintln(os.Stderr, "Creating application")
-	gapp := app.NewGaiaApp(
-		ctx.Logger, appDB, traceStoreWriter, true, uint(1), map[int64]bool{}, "",
+	myapp := app.NewGaiaApp(
+		ctx.Logger, appDB, traceStoreWriter, true, uint(1),
 		baseapp.SetPruning(store.PruneEverything), // nothing
 	)
 
@@ -111,17 +109,14 @@ func replayTxs(rootDir string) error {
 	}
 	// tmsm.SaveState(tmDB, genState)
 
-	cc := proxy.NewLocalClientCreator(gapp)
+	cc := proxy.NewLocalClientCreator(myapp)
 	proxyApp := proxy.NewAppConns(cc)
 	err = proxyApp.Start()
 	if err != nil {
 		return err
 	}
 	defer func() {
-		err = proxyApp.Stop()
-		if err != nil {
-			return
-		}
+		_ = proxyApp.Stop()
 	}()
 
 	state := tmsm.LoadState(tmDB)

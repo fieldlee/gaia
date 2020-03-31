@@ -60,16 +60,12 @@ endif
 ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
 
-BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)' -trimpath
+BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
 
 # The below include contains the tools target.
 include contrib/devtools/Makefile
 
-###############################################################################
-###                              Documentation                              ###
-###############################################################################
-
-all: install lint test
+all: install lint check
 
 build: go.sum
 ifeq ($(OS),Windows_NT)
@@ -94,6 +90,12 @@ install: go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/gaiad
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/gaiacli
 
+install-debug: go.sum
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/gaiadebug
+
+########################################
+### Tools & dependencies
+
 go-mod-cache: go.sum
 	@echo "--> Download go modules to local cache"
 	@go mod download
@@ -113,36 +115,11 @@ clean:
 distclean: clean
 	rm -rf vendor/
 
-###############################################################################
-###                                 Devdoc                                  ###
-###############################################################################
+########################################
+### Testing
 
-build-docs:
-	@cd docs && \
-	while read p; do \
-		(git checkout $${p} && npm install && VUEPRESS_BASE="/$${p}/" npm run build) ; \
-		mkdir -p ~/output/$${p} ; \
-		cp -r .vuepress/dist/* ~/output/$${p}/ ; \
-		cp ~/output/$${p}/index.html ~/output ; \
-	done < versions ;
-
-sync-docs:
-	cd ~/output && \
-	echo "role_arn = ${DEPLOYMENT_ROLE_ARN}" >> /root/.aws/config ; \
-	echo "CI job = ${CIRCLE_BUILD_URL}" >> version.html ; \
-	aws s3 sync . s3://${WEBSITE_BUCKET} --profile terraform --delete ; \
-	aws cloudfront create-invalidation --distribution-id ${CF_DISTRIBUTION_ID} --profile terraform --path "/*" ;
-.PHONY: sync-docs
-
-
-###############################################################################
-###                           Tests & Simulation                            ###
-###############################################################################
-
-include sims.mk
 
 test: test-unit test-build
-
 test-all: check test-race test-cover
 
 test-unit:
@@ -157,15 +134,8 @@ test-cover:
 test-build: build
 	@go test -mod=readonly -p 4 `go list ./cli_test/...` -tags=cli_test -v
 
-benchmark:
-	@go test -mod=readonly -bench=. ./...
 
-
-###############################################################################
-###                                Linting                                  ###
-###############################################################################
-
-lint:
+lint: golangci-lint
 	golangci-lint run
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" | xargs gofmt -d -s
 	go mod verify
@@ -175,16 +145,19 @@ format:
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/lcd/statik/statik.go" | xargs misspell -w
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/lcd/statik/statik.go" | xargs goimports -w -local github.com/cosmos/cosmos-sdk
 
-###############################################################################
-###                                Localnet                                 ###
-###############################################################################
+benchmark:
+	@go test -mod=readonly -bench=. ./...
+
+
+########################################
+### Local validator nodes using docker and docker-compose
 
 build-docker-gaiadnode:
 	$(MAKE) -C networks/local
 
 # Run a 4-node testnet locally
 localnet-start: build-linux localnet-stop
-	@if ! [ -f build/node0/gaiad/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/gaiad:Z tendermint/gaiadnode testnet --v 4 -o . --starting-ip-address 192.168.10.2 --keyring-backend=test ; fi
+	@if ! [ -f build/node0/gaiad/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/gaiad:Z tendermint/gaiadnode testnet --v 4 -o . --starting-ip-address 192.168.10.2 ; fi
 	docker-compose up -d
 
 # Stop testnet
@@ -213,6 +186,9 @@ run-lcd-contract-tests:
 contract-tests: setup-transactions
 	@echo "Running Gaia LCD for contract tests"
 	dredd && pkill gaiad
+
+# include simulations
+include sims.mk
 
 .PHONY: all build-linux install install-debug \
 	go-mod-cache draw-deps clean build \

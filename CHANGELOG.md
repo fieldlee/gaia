@@ -26,8 +26,7 @@ Types of changes (Stanzas):
 "Improvements" for changes in existing functionality.
 "Deprecated" for soon-to-be removed features.
 "Bug Fixes" for any bug fixes.
-"Client Breaking" for breaking CLI commands and REST routes.
-"State Machine Breaking" for breaking the AppState
+"Breaking" for breaking API changes.
 
 Ref: https://keepachangelog.com/en/1.0.0/
 -->
@@ -35,26 +34,6 @@ Ref: https://keepachangelog.com/en/1.0.0/
 # Changelog
 
 ## [Unreleased]
-
-### Features
-
-* (gaiad) [\#119](https://github.com/cosmos/gaia/pull/119) Add support for the `--inter-block-cache` CLI
-flag and configuration.
-* (gaiacli) [\#132](https://github.com/cosmos/gaia/pull/132) Add `tx decode` command to decode
-Base64 encoded transactions.
-* (modules) [\#190](https://github.com/cosmos/gaia/pull/190) Introduce use of the `x/evidence` module.
-* (gaiad) [\#191](https://github.com/cosmos/gaia/pull/191) Add debug commands to gaiad:
-  * `pubkey`: decode pubkey from base64, hex or bech32
-  * `addr`: convert a address between hex and bech32
-  * `raw-bytes` convert raw-bytes to hex
-* (gaiacli) [\#191](https://github.com/cosmos/gaia/pull/191) Add cmd `decode-tx`, decodes a tx from hex or base64
-* (modules) [\#196](https://github.com/cosmos/gaia/pull/196) Integrate the `x/upgrade` module.
-
-### Client Breaking Changes
-
-* [\#164](https://github.com/cosmos/gaia/pull/164) [\#212](https://github.com/cosmos/gaia/pull/212) The LevelDB-based
-keybase implementation has been replaced with a 99 designs Keyring library-backed implementation. Keys created and stored
-with previous `gaia` releases need to be migrated through the `gaiacli keys migrate` command.
 
 ## [v2.0.7] - 2020-03-11
 
@@ -121,7 +100,7 @@ configuration.
 * [\#104](https://github.com/cosmos/gaia/issues/104) Fix `ModuleAccountAddrs` to
 not rely on the `x/supply` keeper to get module account addresses for blacklisting.
 
-### State Machine Breaking Changes
+### Breaking Changes
 
 * (sdk) Update SDK version to v0.37.0
 

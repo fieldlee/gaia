@@ -3,21 +3,20 @@ package app
 import (
 	"fmt"
 
-	codecstd "github.com/cosmos/cosmos-sdk/codec/std"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 
 	"github.com/cosmos/gaia/app"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 )
 
 // This will fail half the time with the second output being 173
 // This is due to secp256k1 signatures not being constant size.
 // nolint: vet
 func ExampleTxSendSize() {
-	cdc := codecstd.MakeCodec(app.ModuleBasics)
-
+	cdc := app.MakeCodec()
 	var gas uint64 = 1
 
 	priv1 := secp256k1.GenPrivKeySecp256k1([]byte{0})
@@ -32,10 +31,7 @@ func ExampleTxSendSize() {
 	fee := auth.NewStdFee(gas, coins)
 	signBytes := auth.StdSignBytes("example-chain-ID",
 		1, 1, fee, []sdk.Msg{msg1}, "")
-	sig, err := priv1.Sign(signBytes)
-	if err != nil {
-		return
-	}
+	sig, _ := priv1.Sign(signBytes)
 	sigs := []auth.StdSignature{{nil, sig}}
 	tx := auth.NewStdTx([]sdk.Msg{msg1}, fee, sigs, "")
 	fmt.Println(len(cdc.MustMarshalBinaryBare([]sdk.Msg{msg1})))
