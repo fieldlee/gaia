@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types"
 )
 
 /* --------------------------------------------------------------------------- */
@@ -36,15 +36,15 @@ func (msg MsgTransferNFT) Route() string { return RouterKey }
 func (msg MsgTransferNFT) Type() string { return "transfer_nft" }
 
 // ValidateBasic Implements Msg.
-func (msg MsgTransferNFT) ValidateBasic() error {
+func (msg MsgTransferNFT) ValidateBasic() sdk.Error {
 	if strings.TrimSpace(msg.Denom) == "" {
 		return ErrInvalidCollection
 	}
 	if msg.Sender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid sender address")
+		return sdkerrors.ErrInvalidAddress("invalid address")
 	}
 	if msg.Recipient.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid recipient address")
+		return sdkerrors.ErrInvalidAddress("invalid recipient address")
 	}
 	if strings.TrimSpace(msg.ID) == "" {
 		return ErrInvalidCollection
@@ -95,9 +95,10 @@ func (msg MsgEditNFTMetadata) Route() string { return RouterKey }
 func (msg MsgEditNFTMetadata) Type() string { return "edit_nft_metadata" }
 
 // ValidateBasic Implements Msg.
-func (msg MsgEditNFTMetadata) ValidateBasic() error {
+func (msg MsgEditNFTMetadata) ValidateBasic() sdk.Error {
 	if msg.Sender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid sender address")
+		return sdkerrors.ErrInvalidAddress("invalid sender address")
+		//return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "")
 	}
 	if strings.TrimSpace(msg.ID) == "" {
 		return ErrInvalidNFT
@@ -150,7 +151,7 @@ func (msg MsgMintNFT) Route() string { return RouterKey }
 func (msg MsgMintNFT) Type() string { return "mint_nft" }
 
 // ValidateBasic Implements Msg.
-func (msg MsgMintNFT) ValidateBasic() error {
+func (msg MsgMintNFT) ValidateBasic() sdk.Error {
 	if strings.TrimSpace(msg.Denom) == "" {
 		return ErrInvalidNFT
 	}
@@ -158,10 +159,10 @@ func (msg MsgMintNFT) ValidateBasic() error {
 		return ErrInvalidNFT
 	}
 	if msg.Sender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid sender address")
+		return sdkerrors.ErrInvalidAddress("invalid sender address" )
 	}
 	if msg.Recipient.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid recipient address")
+		return sdkerrors.ErrInvalidAddress("invalid recipient address")
 	}
 	return nil
 }
@@ -204,7 +205,7 @@ func (msg MsgBurnNFT) Route() string { return RouterKey }
 func (msg MsgBurnNFT) Type() string { return "burn_nft" }
 
 // ValidateBasic Implements Msg.
-func (msg MsgBurnNFT) ValidateBasic() error {
+func (msg MsgBurnNFT) ValidateBasic() sdk.Error {
 	if strings.TrimSpace(msg.ID) == "" {
 		return ErrInvalidNFT
 	}
@@ -212,7 +213,7 @@ func (msg MsgBurnNFT) ValidateBasic() error {
 		return ErrInvalidNFT
 	}
 	if msg.Sender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid sender address")
+		return sdkerrors.ErrInvalidAddress("invalid sender address")
 	}
 	return nil
 }

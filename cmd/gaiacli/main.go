@@ -24,6 +24,8 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 
 	"github.com/cosmos/gaia/app"
+
+	nftcli "github.com/cosmos/gaia/x/nft/client/cli"
 )
 
 func main() {
@@ -68,6 +70,7 @@ func main() {
 		client.LineBreak,
 		version.Cmd,
 		client.NewCompletionCmd(rootCmd, true),
+
 	)
 
 	// Add flags and prefix all env exposed with GA
@@ -95,8 +98,8 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		authcmd.QueryTxsByEventsCmd(cdc),
 		authcmd.QueryTxCmd(cdc),
 		client.LineBreak,
+		nftcli.GetQueryCmd(cdc),
 	)
-
 	// add modules' query commands
 	app.ModuleBasics.AddQueryCommands(queryCmd, cdc)
 
@@ -118,6 +121,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		authcmd.GetBroadcastCommand(cdc),
 		authcmd.GetEncodeCommand(cdc),
 		client.LineBreak,
+		nftcli.GetTxCmd(cdc),
 	)
 
 	// add modules' tx commands

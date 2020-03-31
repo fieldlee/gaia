@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types"
 )
 
 // IDCollection defines a set of nft ids that belong to a specific
@@ -46,7 +46,7 @@ func (idCollection IDCollection) AddID(id string) IDCollection {
 func (idCollection IDCollection) DeleteID(id string) (IDCollection, error) {
 	index := idCollection.IDs.find(id)
 	if index == -1 {
-		return idCollection, sdkerrors.Wrap(ErrUnknownNFT,
+		return idCollection, sdkerrors.ErrUnknownRequest(
 			fmt.Sprintf("ID #%s doesn't exist on ID Collection %s", id, idCollection.Denom),
 		)
 	}
@@ -134,7 +134,7 @@ func (owner Owner) UpdateIDCollection(idCollection IDCollection) (Owner, error) 
 	denom := idCollection.Denom
 	index := owner.IDCollections.find(denom)
 	if index == -1 {
-		return owner, sdkerrors.Wrap(ErrUnknownCollection,
+		return owner, sdkerrors.ErrUnknownRequest(
 			fmt.Sprintf("ID Collection %s doesn't exist for owner %s", denom, owner.Address),
 		)
 	}
@@ -148,7 +148,7 @@ func (owner Owner) UpdateIDCollection(idCollection IDCollection) (Owner, error) 
 func (owner Owner) DeleteID(denom string, id string) (Owner, error) {
 	idCollection, found := owner.GetIDCollection(denom)
 	if !found {
-		return owner, sdkerrors.Wrap(ErrUnknownNFT,
+		return owner, sdkerrors.ErrUnknownRequest(
 			fmt.Sprintf("ID #%s doesn't exist in ID Collection %s", id, denom),
 		)
 	}

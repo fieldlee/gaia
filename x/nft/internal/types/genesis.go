@@ -1,7 +1,7 @@
 package types
 
 import (
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types"
 )
 
 // GenesisState is the state that must be provided at genesis.
@@ -28,7 +28,7 @@ func DefaultGenesisState() GenesisState {
 func ValidateGenesis(data GenesisState) error {
 	for _, Owner := range data.Owners {
 		if Owner.Address.Empty() {
-			return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "address cannot be empty")
+			return sdkerrors.ErrInvalidAddress( "address cannot be empty")
 		}
 	}
 	return nil

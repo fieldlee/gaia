@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gaia/x/nft/exported"
 	"github.com/cosmos/gaia/x/nft/internal/types"
 )
@@ -19,7 +19,7 @@ func (k Keeper) IsNFT(ctx sdk.Context, denom, id string) (exists bool) {
 func (k Keeper) GetNFT(ctx sdk.Context, denom, id string) (nft exported.NFT, err error) {
 	collection, found := k.GetCollection(ctx, denom)
 	if !found {
-		return nil, sdkerrors.Wrap(types.ErrUnknownCollection, fmt.Sprintf("collection of %s doesn't exist", denom))
+		return nil, sdkerrors.ErrUnknownRequest(fmt.Sprintf("collection of %s doesn't exist", denom))
 	}
 	nft, err = collection.GetNFT(id)
 
@@ -33,7 +33,7 @@ func (k Keeper) GetNFT(ctx sdk.Context, denom, id string) (nft exported.NFT, err
 func (k Keeper) UpdateNFT(ctx sdk.Context, denom string, nft exported.NFT) (err error) {
 	collection, found := k.GetCollection(ctx, denom)
 	if !found {
-		return sdkerrors.Wrap(types.ErrUnknownCollection, fmt.Sprintf("collection #%s doesn't exist", denom))
+		return sdkerrors.ErrUnknownRequest(fmt.Sprintf("collection #%s doesn't exist", denom))
 	}
 	oldNFT, err := collection.GetNFT(nft.GetID())
 	if err != nil {
@@ -78,7 +78,7 @@ func (k Keeper) MintNFT(ctx sdk.Context, denom string, nft exported.NFT) (err er
 func (k Keeper) DeleteNFT(ctx sdk.Context, denom, id string) (err error) {
 	collection, found := k.GetCollection(ctx, denom)
 	if !found {
-		return sdkerrors.Wrap(types.ErrUnknownCollection, fmt.Sprintf("collection of %s doesn't exist", denom))
+		return sdkerrors.ErrUnknownRequest(fmt.Sprintf("collection of %s doesn't exist", denom))
 	}
 	nft, err := collection.GetNFT(id)
 	if err != nil {
@@ -86,7 +86,7 @@ func (k Keeper) DeleteNFT(ctx sdk.Context, denom, id string) (err error) {
 	}
 	ownerIDCollection, found := k.GetOwnerByDenom(ctx, nft.GetOwner(), denom)
 	if !found {
-		return sdkerrors.Wrap(types.ErrUnknownCollection,
+		return sdkerrors.ErrUnknownRequest(
 			fmt.Sprintf("id collection #%s doesn't exist for owner %s", denom, nft.GetOwner()),
 		)
 	}
